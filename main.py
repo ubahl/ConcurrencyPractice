@@ -35,10 +35,8 @@ async def async_scrape_intro_paragraphs(urls):
     print(results)
 
 def summarize_paragraphs(client, paragraphs):
-  prompt = f"""
-    Summarize the following paragraphs:
-    {'\n'.join(paragraphs)}
-    """
+  prompt = f"""Summarize the following paragraphs:
+{'\n'.join(paragraphs)}"""
   
   message = client.messages.create(
     model="claude-3-7-sonnet-20250219",
