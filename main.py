@@ -1,9 +1,9 @@
-import anthropic
 import asyncio
 import requests
 import aiohttp
 from bs4 import BeautifulSoup
 from time import perf_counter
+
 
 def scrape_intro_paragraphs(url):
   response = requests.get(url)
@@ -39,16 +39,6 @@ urls = [
     "https://en.wikipedia.org/wiki/Poodle"
 ]
 
-# set up anthropic
-
-import os
-
-client = anthropic.Anthropic(
-    api_key=os.environ.get('ANTHROPIC_API_KEY')
-)
-
-
-
 # without concurrency
 
 start_time = perf_counter()
@@ -57,18 +47,16 @@ results = [scrape_intro_paragraphs(url) for url in urls]
 
 end_time = perf_counter()
 
-print(results)
-
 print(f"Without concurrency: {(end_time - start_time)*1000:.2f} ms")
 
 # asynchronously
 
-# start_time = perf_counter()
+start_time = perf_counter()
 
-# asyncio.run(async_scrape_intro_paragraphs(urls))
+asyncio.run(async_scrape_intro_paragraphs(urls))
 
-# end_time = perf_counter()
+end_time = perf_counter()
 
-# print(f"Asynchronously: {(end_time - start_time)*1000:.2f} ms")
+print(f"Asynchronously: {(end_time - start_time)*1000:.2f} ms")
 
-# print table to compare async vs multithread
+# todo: print table to compare async vs multithread
