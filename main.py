@@ -41,9 +41,11 @@ urls = [
 
 # set up anthropic
 
-export ANTHROPIC_API_KEY="sk-ant-api03-2QZ91lQY34h59xY94yY94yY94yY94yY94yY94"
+import os
 
-client = anthropic.Anthropic()
+client = anthropic.Anthropic(
+    api_key=os.environ.get('ANTHROPIC_API_KEY')
+)
 
 
 
