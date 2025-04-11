@@ -3,8 +3,10 @@ import anthropic
 import asyncio
 import requests
 import aiohttp
+import threading
 from bs4 import BeautifulSoup
 from time import perf_counter
+from concurrent.futures import ThreadPoolExecutor
 
 
 def scrape_intro_paragraphs(url):
@@ -73,7 +75,7 @@ client = anthropic.Anthropic(
     api_key=os.environ.get('ANTHROPIC_API_KEY')
 )
 
-# without concurrency
+# sequentially
 
 start_time = perf_counter()
 
@@ -99,6 +101,19 @@ print(f"Summary: {summarize_paragraphs(client, results)}")
 
 print(f"Asynchronously: {(end_time - start_time)*1000:.2f} ms")
 
-# 
+# multithreaded
 
-# todo: print table to compare async vs multithread
+print()
+
+start_time = perf_counter()
+
+with ThreadPoolExecutor() as executor:
+  results = list(executor.map(scrape_intro_paragraphs, urls))
+
+end_time = perf_counter()
+
+print(f"Summary: {summarize_paragraphs(client, results)}")
+
+print(f"Multithreaded: {(end_time - start_time)*1000:.2f} ms")
+
+# todo: print table / graph to compare 
