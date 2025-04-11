@@ -13,7 +13,7 @@ def scrape_intro_paragraphs(url):
 
   paragraphs = soup.find_all('p')
 
-  return [paragraph.text for paragraph in paragraphs[:3]]
+  return " ".join([paragraph.text for paragraph in paragraphs[:3]])
 
 
 async def async_fetch_page(session, url):
@@ -25,24 +25,27 @@ async def async_parse_page(session, url):
   page = await async_fetch_page(session, url)
   soup = BeautifulSoup(page, "html.parser")
   paragraphs = soup.find_all('p')
-  return [paragraph.text for paragraph in paragraphs[:3]]
+  return " ".join([paragraph.text for paragraph in paragraphs[:3]])
 
 
 async def async_scrape_intro_paragraphs(urls):
   async with aiohttp.ClientSession() as session:
     tasks = [async_parse_page(session, url) for url in urls]
     results = await asyncio.gather(*tasks)
-    print(results)
+    return results
 
 def summarize_paragraphs(client, paragraphs):
-  prompt = f"""Summarize the following paragraphs:
-{'\n'.join(paragraphs)}"""
+  prompt = f"""
+    Summarize the following paragraphs: 
+    
+    {" ".join(paragraphs)}
+  """
   
   message = client.messages.create(
     model="claude-3-7-sonnet-20250219",
     max_tokens=1000,
     temperature=1,
-    system="You are a wikipedia summarizer. Respond with a two to three sentence long summary.",
+    system="You are a wikipedia summarizer. Respond with a summary, maximum one sentence.",
     messages=[
         {
             "role": "user",
@@ -55,7 +58,7 @@ def summarize_paragraphs(client, paragraphs):
         }
     ]
   )
-  return message.content
+  return message.content[0].text
 
 
 urls = [
@@ -80,17 +83,22 @@ end_time = perf_counter()
 
 print(f"Summary: {summarize_paragraphs(client, results)}")
 
-
 print(f"Without concurrency: {(end_time - start_time)*1000:.2f} ms")
 
 # asynchronously
 
-# start_time = perf_counter()
+print()
 
-# asyncio.run(async_scrape_intro_paragraphs(urls))
+start_time = perf_counter()
 
-# end_time = perf_counter()
+results = asyncio.run(async_scrape_intro_paragraphs(urls))
 
-# print(f"Asynchronously: {(end_time - start_time)*1000:.2f} ms")
+end_time = perf_counter()
+
+print(f"Summary: {summarize_paragraphs(client, results)}")
+
+print(f"Asynchronously: {(end_time - start_time)*1000:.2f} ms")
+
+# 
 
 # todo: print table to compare async vs multithread
