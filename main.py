@@ -94,7 +94,7 @@ for n in url_counts:
   end_time = perf_counter()
   
   sequential_time_ms = (end_time - start_time) * 1000
-  sequential_performance.append(f"{sequential_time_ms:2f} ms")
+  sequential_performance.append(f"{sequential_time_ms:.2f} ms")
   print(f"Sequential summary: {summarize_paragraphs(client, results)} \n")
   
   # asynchronously
@@ -103,7 +103,7 @@ for n in url_counts:
   end_time = perf_counter()
   
   asynchronous_time_ms = (end_time - start_time) * 1000
-  asynchronous_performance.append(f"{asynchronous_time_ms:2f} ms")
+  asynchronous_performance.append(f"{asynchronous_time_ms:.2f} ms")
   print(f"Asynchronous summary: {summarize_paragraphs(client, results)} \n")
   
   # multithreaded
@@ -113,8 +113,8 @@ for n in url_counts:
   end_time = perf_counter()
   
   multithreaded_time_ms = (end_time - start_time) * 1000
-  multithreaded_performance.append(f"{multithreaded_time_ms:2f} ms")
-  print(f"Multithreaded summary: {summarize_paragraphs(client, results)}")
+  multithreaded_performance.append(f"{multithreaded_time_ms:.2f} ms")
+  print(f"Multithreaded summary: {summarize_paragraphs(client, results)} \n")
 
 # visualize results
 table_data = [sequential_performance, asynchronous_performance, multithreaded_performance]
