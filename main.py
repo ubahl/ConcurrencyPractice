@@ -6,6 +6,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
+from tabulate import tabulate
 
 
 def scrape_intro_paragraphs(url):
@@ -77,9 +78,9 @@ results = [scrape_intro_paragraphs(url) for url in urls]
 
 end_time = perf_counter()
 
-print(f"Summary: {summarize_paragraphs(client, results)}")
+sequential_time_ms = (end_time - start_time) * 1000
 
-print(f"Sequentially: {(end_time - start_time)*1000:.2f} ms")
+print(f"Sequential summary: {summarize_paragraphs(client, results)}")
 
 # asynchronously
 
@@ -91,9 +92,9 @@ results = asyncio.run(async_scrape_intro_paragraphs(urls))
 
 end_time = perf_counter()
 
-print(f"Summary: {summarize_paragraphs(client, results)}")
+asynchronous_time_ms = (end_time - start_time)*1000
 
-print(f"Asynchronously: {(end_time - start_time)*1000:.2f} ms")
+print(f"Asynchronous summary: {summarize_paragraphs(client, results)}")
 
 # multithreaded
 
@@ -106,9 +107,20 @@ with ThreadPoolExecutor() as executor:
 
 end_time = perf_counter()
 
-print(f"Summary: {summarize_paragraphs(client, results)}")
+multithreaded_time_ms = (end_time - start_time)*1000
 
-print(f"Multithreaded: {(end_time - start_time)*1000:.2f} ms")
+print(f"Multithreaded summary: {summarize_paragraphs(client, results)}")
 
-# todo: print table / graph to compare
+# visualize results
+
+table_data = [
+  ["Sequential", f"{sequential_time_ms:.2f} ms"],
+  ["Async", f"{asynchronous_time_ms:.2f} ms"],
+  ["Multithreaded", f"{multithreaded_time_ms:.2f} ms"]
+]
+
+print("\nPerformance Comparison:")
+print(tabulate(table_data, headers=['Method', 'Time (ms)'], tablefmt='grid'))
+
+# todo: print graph to compare
 # todo: add more urls
