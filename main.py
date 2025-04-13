@@ -3,6 +3,7 @@ import anthropic
 import asyncio
 import requests
 import aiohttp
+import random
 from bs4 import BeautifulSoup
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
@@ -74,20 +75,18 @@ all_urls = [
     "https://en.wikipedia.org/wiki/Bernese_Mountain_Dog"
 ]
 
-# set up anthropic
-
+# sets up anthropic
 client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
 
-
-
+# runs the performance tests
 url_counts = [3, 6, 10]
 
 sequential_performance = [ "Sequential" ]
-asynchronous_performance = [ " Asynchronous" ]
+asynchronous_performance = [ "Asynchronous" ]
 multithreaded_performance = [ "Multithreaded" ]
 
 for n in url_counts:
-  urls = all_urls.sample(n)
+  urls = random.sample(all_urls, n)
   
   # sequentially
   start_time = perf_counter()
@@ -114,17 +113,14 @@ for n in url_counts:
   end_time = perf_counter()
   
   multithreaded_time_ms = (end_time - start_time) * 1000
-  
+  multithreaded_performance.append(f"{multithreaded_time_ms:2f} ms")
   print(f"Multithreaded summary: {summarize_paragraphs(client, results)}")
 
 # visualize results
-
-table_data = [["Sequential", f"{sequential_time_ms:.2f} ms"],
-              ["Async", f"{asynchronous_time_ms:.2f} ms"],
-              ["Multithreaded", f"{multithreaded_time_ms:.2f} ms"]]
+table_data = [sequential_performance, asynchronous_performance, multithreaded_performance]
 
 print("\nPerformance Comparison:")
-print(tabulate(table_data, headers=['Method', 'Time (ms)'], tablefmt='grid'))
+print(tabulate(table_data, headers=["Method", url_counts], tablefmt='grid'))
 
 # todo: print graph to compare
 # summaries into a txt file
