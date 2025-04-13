@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
 from tabulate import tabulate
-
+import matplotlib.pyplot as plt
 
 def scrape_intro_paragraphs(url):
   response = requests.get(url)
@@ -81,14 +81,16 @@ client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
 # runs the performance tests
 url_counts = [3, 6, 10]
 
-sequential_performance = [ "Sequential" ]
-asynchronous_performance = [ "Asynchronous" ]
-multithreaded_performance = [ "Multithreaded" ]
+sequential_performance = []
+asynchronous_performance = []
+multithreaded_performance = []
 
 for n in url_counts:
   urls = random.sample(all_urls, n)
 
   print('* ' * 10 + f"{n} URLs " + '* ' * 10)
+  [print(f"* {url}") for url in urls]
+  print('\n')
   
   # sequentially
   start_time = perf_counter()
@@ -96,7 +98,7 @@ for n in url_counts:
   end_time = perf_counter()
   
   sequential_time_ms = (end_time - start_time) * 1000
-  sequential_performance.append(f"{sequential_time_ms:.2f} ms")
+  sequential_performance.append(sequential_time_ms)
   print(f"Sequential summary: {summarize_paragraphs(client, results)} \n")
   
   # asynchronously
@@ -105,7 +107,7 @@ for n in url_counts:
   end_time = perf_counter()
   
   asynchronous_time_ms = (end_time - start_time) * 1000
-  asynchronous_performance.append(f"{asynchronous_time_ms:.2f} ms")
+  asynchronous_performance.append(asynchronous_time_ms)
   print(f"Asynchronous summary: {summarize_paragraphs(client, results)} \n")
   
   # multithreaded
@@ -115,16 +117,31 @@ for n in url_counts:
   end_time = perf_counter()
   
   multithreaded_time_ms = (end_time - start_time) * 1000
-  multithreaded_performance.append(f"{multithreaded_time_ms:.2f} ms")
+  multithreaded_performance.append(multithreaded_time_ms)
   print(f"Multithreaded summary: {summarize_paragraphs(client, results)} \n")
 
-# visualize results
-table_data = [sequential_performance, asynchronous_performance, multithreaded_performance]
+# visualize results (table)
+table_data = [
+  ["Sequential"] + [f"{time:2f} ms" for time in sequential_performance], 
+  ["Asynchronous"] + [f"{time:2f} ms" for time in asynchronous_performance], 
+  ["Multithreaded"] + [f"{time:2f} ms" for time in multithreaded_performance]
+]
 
 print("\nPerformance Comparison:")
 headers = ["Method"] + [f"{n} URLs" for n in url_counts]
 print(tabulate(table_data, headers=headers, tablefmt='grid'))
 
-# todo: print graph to compare
-# summaries into a txt file
-# todo: add more urls
+# visualize results (graph)
+
+plt.figure(figsize=(10, 6))
+plt.plot(url_counts, sequential_performance, marker='o', label='Sequential')
+plt.plot(url_counts, asynchronous_performance, marker='s', label='Asynchronous')
+plt.plot(url_counts, multithreaded_performance, marker='^', label='Multithreaded')
+
+plt.xlabel('Number of URLs')
+plt.ylabel('Time (milliseconds)')
+plt.title('Performance Comparison of Different Methods')
+plt.legend()
+plt.grid(True)
+plt.savefig('performance_comparison.png')
+plt.close()
