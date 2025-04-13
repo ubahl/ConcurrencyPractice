@@ -3,7 +3,6 @@ import anthropic
 import asyncio
 import requests
 import aiohttp
-import threading
 from bs4 import BeautifulSoup
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
@@ -36,30 +35,27 @@ async def async_scrape_intro_paragraphs(urls):
     results = await asyncio.gather(*tasks)
     return results
 
+
 def summarize_paragraphs(client, paragraphs):
   prompt = f"""
     Summarize the following paragraphs: 
     
     {" ".join(paragraphs)}
   """
-  
+
   message = client.messages.create(
-    model="claude-3-7-sonnet-20250219",
-    max_tokens=1000,
-    temperature=1,
-    system="You are a wikipedia summarizer. Respond with a summary, maximum one sentence.",
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": prompt
-                }
-            ]
-        }
-    ]
-  )
+      model="claude-3-7-sonnet-20250219",
+      max_tokens=1000,
+      temperature=1,
+      system=
+      "You are a wikipedia summarizer. Respond with a summary, maximum one sentence.",
+      messages=[{
+          "role": "user",
+          "content": [{
+              "type": "text",
+              "text": prompt
+          }]
+      }])
   return message.content[0].text
 
 
@@ -71,9 +67,7 @@ urls = [
 
 # set up anthropic
 
-client = anthropic.Anthropic(
-    api_key=os.environ.get('ANTHROPIC_API_KEY')
-)
+client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
 
 # sequentially
 
@@ -85,7 +79,7 @@ end_time = perf_counter()
 
 print(f"Summary: {summarize_paragraphs(client, results)}")
 
-print(f"Without concurrency: {(end_time - start_time)*1000:.2f} ms")
+print(f"Sequentially: {(end_time - start_time)*1000:.2f} ms")
 
 # asynchronously
 
@@ -116,4 +110,5 @@ print(f"Summary: {summarize_paragraphs(client, results)}")
 
 print(f"Multithreaded: {(end_time - start_time)*1000:.2f} ms")
 
-# todo: print table / graph to compare 
+# todo: print table / graph to compare
+# todo: add more urls
