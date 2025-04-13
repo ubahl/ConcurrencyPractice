@@ -120,7 +120,8 @@ for n in url_counts:
 table_data = [sequential_performance, asynchronous_performance, multithreaded_performance]
 
 print("\nPerformance Comparison:")
-print(tabulate(table_data, headers=["Method"] + url_counts, tablefmt='grid'))
+headers = ["Method"] + [f"{n} URLs" for n in url_counts]
+print(tabulate(table_data, headers=headers, tablefmt='grid'))
 
 # todo: print graph to compare
 # summaries into a txt file
