@@ -60,7 +60,7 @@ def summarize_paragraphs(client, paragraphs):
   return message.content[0].text
 
 
-urls = [
+all_urls = [
     "https://en.wikipedia.org/wiki/Goldendoodle",
     "https://en.wikipedia.org/wiki/Golden_Retriever",
     "https://en.wikipedia.org/wiki/Poodle",
@@ -87,38 +87,30 @@ asynchronous_performance = [ " Asynchronous" ]
 multithreaded_performance = [ "Multithreaded" ]
 
 for n in url_counts:
+  urls = all_urls.sample(n)
+  
   # sequentially
   start_time = perf_counter()
   results = [scrape_intro_paragraphs(url) for url in urls]
   end_time = perf_counter()
   
   sequential_time_ms = (end_time - start_time) * 1000
-  sequential_performance.append(f"{sequential_time_ms:2f}")
-  print(f"Sequential summary: {summarize_paragraphs(client, results)}")
+  sequential_performance.append(f"{sequential_time_ms:2f} ms")
+  print(f"Sequential summary: {summarize_paragraphs(client, results)} \n")
   
   # asynchronously
-  
-  print()
-  
   start_time = perf_counter()
-  
   results = asyncio.run(async_scrape_intro_paragraphs(urls))
-  
   end_time = perf_counter()
   
   asynchronous_time_ms = (end_time - start_time) * 1000
-  
-  print(f"Asynchronous summary: {summarize_paragraphs(client, results)}")
+  asynchronous_performance.append(f"{asynchronous_time_ms:2f} ms")
+  print(f"Asynchronous summary: {summarize_paragraphs(client, results)} \n")
   
   # multithreaded
-  
-  print()
-  
   start_time = perf_counter()
-  
   with ThreadPoolExecutor() as executor:
     results = list(executor.map(scrape_intro_paragraphs, urls))
-  
   end_time = perf_counter()
   
   multithreaded_time_ms = (end_time - start_time) * 1000
