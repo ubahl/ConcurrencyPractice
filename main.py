@@ -87,6 +87,8 @@ multithreaded_performance = [ "Multithreaded" ]
 
 for n in url_counts:
   urls = random.sample(all_urls, n)
+
+  print('* ' * 10 + f"{n} URLs " + '* ' * 10)
   
   # sequentially
   start_time = perf_counter()
