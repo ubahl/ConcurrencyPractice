@@ -33,9 +33,10 @@ async def async_parse_page(session, url):
 
 async def async_scrape_intro_paragraphs(urls):
   async with aiohttp.ClientSession() as session:
-    tasks = [async_parse_page(session, url) for url in urls]
-    results = await asyncio.gather(*tasks)
-    return results
+    async with asyncio.TaskGroup() as tg:
+      tasks = [tg.create_task(async_parse_page(session, url)) for url in urls]
+
+  return [task.result() for task in tasks]
 
 
 def summarize_paragraphs(client, paragraphs):
