@@ -7,6 +7,7 @@ import random
 from bs4 import BeautifulSoup
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from tabulate import tabulate
 import matplotlib.pyplot as plt
 
@@ -76,6 +77,8 @@ all_urls = [
     "https://en.wikipedia.org/wiki/Bernese_Mountain_Dog"
 ]
 
+print(f"Number of processes: {os.cpu_count()}\n")
+
 # sets up anthropic
 client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
 
@@ -85,6 +88,7 @@ url_counts = [3, 6, 10]
 sequential_performance = []
 asynchronous_performance = []
 multithreaded_performance = []
+multiprocessing_performance = []
 
 for n in url_counts:
   urls = random.sample(all_urls, n)
@@ -113,7 +117,7 @@ for n in url_counts:
   
   # multithreaded
   start_time = perf_counter()
-  with ThreadPoolExecutor() as executor:
+  with ThreadPoolExecutor(max_workers=20) as executor:
     results = list(executor.map(scrape_intro_paragraphs, urls))
   end_time = perf_counter()
   
@@ -121,11 +125,23 @@ for n in url_counts:
   multithreaded_performance.append(multithreaded_time_ms)
   print(f"Multithreaded summary: {summarize_paragraphs(client, results)} \n")
 
+  # multiprocess
+  start_time = perf_counter()
+  with ProcessPoolExecutor(max_workers=4) as executor:
+    results = list(executor.map(scrape_intro_paragraphs, urls))
+  end_time = perf_counter()
+  
+  multiprocessing_time_ms = (end_time - start_time) * 1000
+  multiprocessing_performance.append(multiprocessing_time_ms)
+  print(f"Multiprocessing summary: {summarize_paragraphs(client, results)} \n")
+  
+
 # visualize results (table)
 table_data = [
   ["Sequential"] + [f"{time:2f} ms" for time in sequential_performance], 
   ["Asynchronous"] + [f"{time:2f} ms" for time in asynchronous_performance], 
-  ["Multithreaded"] + [f"{time:2f} ms" for time in multithreaded_performance]
+  ["Multithreaded"] + [f"{time:2f} ms" for time in multithreaded_performance],
+  ["Multiprocess"] + [f"{time:2f} ms" for time in multiprocessing_performance]
 ]
 
 print("\nPerformance Comparison:")
@@ -138,6 +154,7 @@ plt.figure(figsize=(10, 6))
 plt.plot(url_counts, sequential_performance, marker='o', label='Sequential')
 plt.plot(url_counts, asynchronous_performance, marker='s', label='Asynchronous')
 plt.plot(url_counts, multithreaded_performance, marker='^', label='Multithreaded')
+plt.plot(url_counts, multithreaded_performance, marker='^', label='Multiprocess')
 
 plt.xlabel('Number of URLs')
 plt.ylabel('Time (milliseconds)')
